@@ -1,6 +1,6 @@
 # 🧠 Snowflake ChatBot: AI Agent via Slack + OpenAI + n8n
 
-![Snowflake ChatBot Architecture]
+
 <img width="746" alt="Screenshot 2025-04-23 at 10 06 19 PM" src="https://github.com/user-attachments/assets/f18a4766-8d1e-4ff9-86cd-2147f63df2d8" />
 
 
