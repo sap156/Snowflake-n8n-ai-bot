@@ -1,0 +1,180 @@
+{
+  "name": "Demo: Snowflake ChatBot",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "d5e60eb2-267c-4f68-aefe-439031bcaceb",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        320,
+        280
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "NTmKcEqWVq1SPL7o",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a Data Quality (DQC) assistant. You receive natural language questions and respond using real-time data from a Snowflake database.\n\nYou can call a tool named `query_snowflake(sql: string)` to run SQL queries.\n\nThe database contains a single relevant table:\n\n---\n\n**BANKING_DEMO.BANKING.DQC_RESULTS**  \n- CHECK_ID: Unique ID for the DQC run  \n- TABLE_NAME: Name of the table being validated (e.g., CUSTOMERS, TRANSACTIONS)  \n- RULE_NAME: Name of the DQC rule applied  \n- RULE_DESCRIPTION: Description of the rule  \n- STATUS: PASS or FAIL  \n- ERROR_COUNT: Number of violations found  \n- EXECUTED_AT: Timestamp when the rule was run\n\n---\n\nUse this information to answer questions like:\n- “What DQ checks failed today?”\n- “Show me all failed checks on the CUSTOMERS table”\n- “List rules that passed recently”\n- “Which rules have the highest error count?”\n\n✅ Only use SELECT queries  \n❌ Never use DELETE, UPDATE, INSERT, or DROP  \n🎯 After receiving results, explain them in plain English\n",
+          "maxIterations": 3
+        }
+      },
+      "id": "41174c8a-6ac8-42bd-900e-ca15196600c5",
+      "name": "Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        400,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get data in Snowflake",
+        "operation": "executeQuery",
+        "query": "SELECT * from BANKING_DEMO.BANKING.DQC_RESULTS;"
+      },
+      "type": "n8n-nodes-base.snowflakeTool",
+      "typeVersion": 1,
+      "position": [
+        700,
+        280
+      ],
+      "id": "7c535d9a-6dc2-4c62-927f-b550096e772c",
+      "name": "query_snowflake",
+      "notesInFlow": false,
+      "credentials": {
+        "snowflake": {
+          "id": "fkJbS0Sv71GsSDfw",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "app_mention"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C08PRESBY3B",
+          "mode": "list",
+          "cachedResultName": "all-n8n-test"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        180,
+        20
+      ],
+      "id": "93c24c14-a5da-421f-bdd3-2d25d953edaa",
+      "name": "Get Message",
+      "webhookId": "189fe814-f872-4c94-bf0e-15d147467908",
+      "credentials": {
+        "slackApi": {
+          "id": "HRopAiSPW1EQObKB",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C08PRESBY3B",
+          "mode": "list",
+          "cachedResultName": "all-n8n-test"
+        },
+        "text": "Send",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        760,
+        20
+      ],
+      "id": "6a0dcf7b-b8da-45f1-9290-0c7887dc42ff",
+      "name": "Send Message",
+      "webhookId": "b3d0a0b5-59db-41ee-8f9d-e14c0ae333ca",
+      "credentials": {
+        "slackApi": {
+          "id": "HRopAiSPW1EQObKB",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "query_snowflake": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Message": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9adf95ce-c689-4741-a381-561ff0e96220",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "17f1c4b6e93a5b8545be7c68048470e5eb50b2981a580f92e3a394eb6ceb7bec"
+  },
+  "id": "5AiydJhvqj4MY4AP",
+  "tags": []
+}
